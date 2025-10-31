@@ -1,0 +1,14 @@
+# Data folders - DO NOT UPLOAD
+Test/
+Train/
+
+# Model file (optional, but good if it's large)
+*.h5
+
+# Python cache & notebook files
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+
+# VS Code settings
+.vscode/
