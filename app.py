@@ -91,7 +91,7 @@ if uploaded_file:
     st.image(img, caption="Preview", use_container_width=True)
 
     # Predict Button
-    if st.button("🔍 Predict"):
+    if st.button(" Predict"):
 
         with st.spinner("Analyzing image... Please wait..."):
             time.sleep(2)
@@ -113,7 +113,7 @@ if uploaded_file:
             predicted_class = label_map[class_id]
 
         #   DISPLAY RESULT
-        st.subheader("🔎 Prediction Result")
+        st.subheader(" Prediction Result")
 
         # No Cancer → Green Light
         if predicted_class == "No Cancer":
@@ -129,9 +129,9 @@ if uploaded_file:
             )
 
         # Confidence bar
-        st.subheader("📊 Confidence Level")
+        st.subheader(" Confidence Level")
         st.progress(confidence / 100)
         st.write(f"**Confidence:** {confidence:.2f}%")
 
 else:
-    st.info("📤 Upload an image to begin prediction.")
+    st.info("Upload an image to begin prediction.")
