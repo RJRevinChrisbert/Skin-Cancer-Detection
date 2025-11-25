@@ -5,9 +5,7 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 import time
 
-# -------------------------------
 #   PAGE CONFIGURATION
-# -------------------------------
 st.set_page_config(
     page_title="Skin Cancer Detection – Multi-Class",
     page_icon="🩺",
@@ -15,9 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# -------------------------------
 #   CUSTOM CSS FOR UI
-# -------------------------------
 st.markdown("""
     <style>
         .main-title {
@@ -51,23 +47,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# -------------------------------
 #   PAGE TITLE
-# -------------------------------
 st.markdown("<h1 class='main-title'>Skin Cancer Classification</h1>", unsafe_allow_html=True)
-st.markdown("<p class='sub-title'>AI Powered · DenseNet201 Model · Multi-Class Prediction</p>", unsafe_allow_html=True)
+st.markdown("<p class='sub-title'>· DenseNet201 Model · Multi-Class Prediction</p>", unsafe_allow_html=True)
 
-# -------------------------------
 #   LOAD MODEL
-# -------------------------------
 MODEL_PATH = "skinDiseaseDetectionUsningCNN.h5"
 
 with st.spinner("Loading AI Model..."):
     model = load_model(MODEL_PATH)
 
-# -------------------------------
 #   CLASS LABELS (10 classes)
-# -------------------------------
 label_map = {
     0: "actinic keratosis",
     1: "basal cell carcinoma",
@@ -81,22 +71,16 @@ label_map = {
     9: "vascular lesion"
 }
 
-# -------------------------------
 #   TRAIN MEAN & STD (REPLACE)
-# -------------------------------
-x_train_mean = 100   # <--- Replace with your real value
-x_train_std = 58     # <--- Replace with your real value
+x_train_mean = 163.71742  
+x_train_std = 41.23842    
 
-# -------------------------------
 #   SIDEBAR DETAILS
-# -------------------------------
 st.sidebar.header("Class Categories")
 for k, v in label_map.items():
     st.sidebar.write(f"**{k} → {v}**")
 
-# -------------------------------
 #   FILE UPLOADER
-# -------------------------------
 uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
@@ -104,7 +88,7 @@ if uploaded_file:
     # Show image preview
     st.subheader("Uploaded Image")
     img = Image.open(uploaded_file)
-    st.image(img, caption="Preview", use_column_width=True)
+    st.image(img, caption="Preview", use_container_width=True)
 
     # Predict Button
     if st.button("🔍 Predict"):
@@ -128,9 +112,7 @@ if uploaded_file:
             confidence = float(np.max(probabilities)) * 100
             predicted_class = label_map[class_id]
 
-        # -------------------------------
         #   DISPLAY RESULT
-        # -------------------------------
         st.subheader("🔎 Prediction Result")
 
         # No Cancer → Green Light
