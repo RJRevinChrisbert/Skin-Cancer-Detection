@@ -1,123 +1,155 @@
 import streamlit as st
-import numpy as np
 from PIL import Image
+import numpy as np
 import tensorflow as tf
+from tensorflow.keras.models import load_model
+import time
 
 # -------------------------------
-# Load the trained model
+#   PAGE CONFIGURATION
 # -------------------------------
-model = tf.keras.models.load_model("skinDiseaseDetectionUsningCNN.h5")
-
-# Your label map (IMPORTANT – use your project’s mapping)
-label_map = {
-    0: "Class_0",
-    1: "Class_1",
-    2: "Class_2",
-    3: "Class_3",
-    4: "Class_4",
-    5: "Class_5",
-    6: "Class_6",
-    7: "Class_7",
-    8: "Class_8",
-    9: "Class_9"
-}
-
-# ---------------------------------------
-# Streamlit Page Configuration
-# ---------------------------------------
 st.set_page_config(
-    page_title="Skin Cancer Detection",
+    page_title="Skin Cancer Detection – Multi-Class",
     page_icon="🩺",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+    layout="centered",
+    initial_sidebar_state="expanded"
 )
 
-# ---------------------------------------
-# Custom Dark Theme UI
-# ---------------------------------------
+# -------------------------------
+#   CUSTOM CSS FOR UI
+# -------------------------------
 st.markdown("""
     <style>
-        .main {
-            background-color: #0f1225;
-            color: white;
-        }
-        .stButton>button {
-            background: linear-gradient(45deg,#4e3df5,#a22ef8);
-            color: white;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-        .upload-box {
-            padding: 20px;
-            border: 2px dashed #666;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
+        .main-title {
+            font-size: 40px;
+            font-weight: 700;
             text-align: center;
+            color: #2E86C1;
         }
-        .prediction-box {
+        .sub-title {
+            font-size: 20px;
+            text-align: center;
+            color: #5D6D7E;
+        }
+        .result-box {
             padding: 20px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .green-light {
+            background-color: #D4EFDF;
+            color: #1D8348;
+            border: 2px solid #27AE60;
+        }
+        .red-light {
+            background-color: #F5B7B1;
+            color: #922B21;
+            border: 2px solid #C0392B;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------
-# Title
-# ---------------------------------------
-st.markdown("<h1 style='text-align:center;'>🩺 Skin Cancer Detection</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; opacity:0.8;'>Upload an image to classify the disease.</p>", unsafe_allow_html=True)
+# -------------------------------
+#   PAGE TITLE
+# -------------------------------
+st.markdown("<h1 class='main-title'>Skin Cancer Classification</h1>", unsafe_allow_html=True)
+st.markdown("<p class='sub-title'>AI Powered · DenseNet201 Model · Multi-Class Prediction</p>", unsafe_allow_html=True)
 
-# ---------------------------------------
-# Layout: Left → Upload | Right → Image + Result
-# ---------------------------------------
-col1, col2 = st.columns([1,2])
+# -------------------------------
+#   LOAD MODEL
+# -------------------------------
+MODEL_PATH = "skinDiseaseDetectionUsningCNN.h5"
 
-with col1:
-    st.markdown("<div class='upload-box'>Click below to upload skin image</div>", unsafe_allow_html=True)
-    uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"])
+with st.spinner("Loading AI Model..."):
+    model = load_model(MODEL_PATH)
 
-    predict_button = st.button("Predict")
+# -------------------------------
+#   CLASS LABELS (10 classes)
+# -------------------------------
+label_map = {
+    0: "actinic keratosis",
+    1: "basal cell carcinoma",
+    2: "dermatofibroma",
+    3: "melanoma",
+    4: "nevus",
+    5: "No Cancer",
+    6: "pigmented benign keratosis",
+    7: "seborrheic keratosis",
+    8: "squamous cell carcinoma",
+    9: "vascular lesion"
+}
 
-with col2:
-    st.subheader("Image Preview")
-    image_container = st.empty()
+# -------------------------------
+#   TRAIN MEAN & STD (REPLACE)
+# -------------------------------
+x_train_mean = 100   # <--- Replace with your real value
+x_train_std = 58     # <--- Replace with your real value
 
-    st.subheader("Prediction Result")
-    result_box = st.empty()
+# -------------------------------
+#   SIDEBAR DETAILS
+# -------------------------------
+st.sidebar.header("Class Categories")
+for k, v in label_map.items():
+    st.sidebar.write(f"**{k} → {v}**")
 
-# ---------------------------------------
-# Prediction Logic
-# ---------------------------------------
-if predict_button:
-    if uploaded_file is None:
-        st.warning("⚠ Please upload an image first.")
-    else:
-        # Load image
-        img = Image.open(uploaded_file)
-        
-        # Model expects (75,100) sized images (as per your project)
-        img_resized = img.resize((100, 75))
-        img_array = np.array(img_resized)
+# -------------------------------
+#   FILE UPLOADER
+# -------------------------------
+uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
 
-        # Normalize (IMPORTANT — match your model)
-        img_norm = (img_array - np.mean(img_array)) / np.std(img_array)
-        img_norm = np.expand_dims(img_norm, axis=0)
+if uploaded_file:
+    
+    # Show image preview
+    st.subheader("Uploaded Image")
+    img = Image.open(uploaded_file)
+    st.image(img, caption="Preview", use_column_width=True)
 
-        # Predict
-        predictions = model.predict(img_norm)
-        class_index = np.argmax(predictions)
-        confidence = np.max(predictions) * 100
-        predicted_label = label_map[class_index]
+    # Predict Button
+    if st.button("🔍 Predict"):
 
-        # Display image
-        image_container.image(img, caption="Uploaded Image", use_column_width=True)
+        with st.spinner("Analyzing image... Please wait..."):
+            time.sleep(2)
 
-        # Display result
-        result_box.markdown(f"""
-        <div class='prediction-box'>
-            <h3>🔍 Prediction: <span style='color:#a97dfc'>{predicted_label}</span></h3>
-            <h4>Confidence: {confidence:.2f}%</h4>
-        </div>
-        """, unsafe_allow_html=True)
+            # Prepare image
+            model_h = model.input_shape[1]
+            model_w = model.input_shape[2]
+
+            img_resized = img.resize((model_w, model_h))
+            img_array = np.asarray(img_resized).astype('float32')
+
+            normalized = (img_array - x_train_mean) / x_train_std
+            image_input = np.expand_dims(normalized, axis=0)
+
+            # Prediction
+            probabilities = model.predict(image_input)
+            class_id = int(np.argmax(probabilities))
+            confidence = float(np.max(probabilities)) * 100
+            predicted_class = label_map[class_id]
+
+        # -------------------------------
+        #   DISPLAY RESULT
+        # -------------------------------
+        st.subheader("🔎 Prediction Result")
+
+        # No Cancer → Green Light
+        if predicted_class == "No Cancer":
+            st.markdown(
+                f"<div class='result-box green-light'>🟢 {predicted_class.upper()}</div>",
+                unsafe_allow_html=True
+            )
+        else:
+            # Any other class → Red light (cancer-related)
+            st.markdown(
+                f"<div class='result-box red-light'>🔴 {predicted_class.upper()}</div>",
+                unsafe_allow_html=True
+            )
+
+        # Confidence bar
+        st.subheader("📊 Confidence Level")
+        st.progress(confidence / 100)
+        st.write(f"**Confidence:** {confidence:.2f}%")
+
+else:
+    st.info("📤 Upload an image to begin prediction.")
